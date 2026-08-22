@@ -1,0 +1,1043 @@
+৮. Class কী?
+class হলো object তৈরির জন্য একটি blueprint-like syntax।
+
+class Person {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  greet() {
+    console.log(`Hello, I am ${this.name}`);
+  }
+}
+
+Object:
+
+const p1 = new Person("Rahim", 25);
+const p2 = new Person("Karim", 30);
+
+ব্যবহার:
+
+p1.greet();
+p2.greet();
+
+৯. Class-এর Method কোথায় থাকে?
+এখানে একটি খুব গুরুত্বপূর্ণ বিষয় আছে।
+
+class Person {
+  constructor(name) {
+    this.name = name;
+  }
+
+  greet() {
+    console.log(`Hello ${this.name}`);
+  }
+}
+
+greet() প্রতিটি object-এর মধ্যে আলাদাভাবে copy হয় না।
+
+এটি থাকে:
+
+Person.prototype
+
+দেখতে পারেন:
+
+console.log(Person.prototype);
+
+এবং:
+
+console.log(Person.prototype.greet);
+
+তাই:
+
+p1.greet()
+
+না পেলে JavaScript prototype chain-এ খুঁজবে।
+
+১০. Prototype কী?
+JavaScript মূলত prototype-based language।
+
+প্রতিটি সাধারণ object-এর একটি internal prototype relationship থাকে।
+
+উদাহরণ:
+
+const user = {
+  name: "Rahim"
+};
+
+এটি একটি prototype থেকে property/method inherit করতে পারে।
+
+যেমন:
+
+user.toString()
+
+toString() আপনি object-এর ভিতরে লিখেননি।
+
+তবুও কাজ করছে।
+
+কারণ JavaScript prototype chain-এ খুঁজে:
+
+user
+ ↓
+Object.prototype
+ ↓
+null
+
+toString() পাওয়া যায় Object.prototype-এ।
+
+১১. Prototype Chain
+ধরুন:
+
+class Person {
+  greet() {
+    console.log("Hello");
+  }
+}
+
+const person = new Person();
+
+Conceptually:
+
+person
+   ↓
+Person.prototype
+   ↓
+Object.prototype
+   ↓
+null
+
+যখন লিখবেন:
+
+person.greet();
+
+JavaScript:
+
+person-এর মধ্যে greet আছে?
+       ↓
+      না
+       ↓
+Person.prototype-এ আছে?
+       ↓
+      হ্যাঁ
+       ↓
+execute
+
+১২. __proto__ বনাম prototype
+এটি beginners-এর জন্য confusing।
+
+prototype
+Constructor function/class-এর property:
+
+Person.prototype
+
+__proto__
+একটি object-এর prototype access করার পুরোনো/legacy উপায়:
+
+person.__proto__
+
+আধুনিকভাবে:
+
+Object.getPrototypeOf(person);
+
+ব্যবহার করা ভালো।
+
+১৩. Four Pillars of OOP
+সাধারণভাবে OOP-এর চারটি প্রধান concept বলা হয়:
+
+Encapsulation
+Abstraction
+Inheritance
+Polymorphism
+JavaScript-এ এগুলো বোঝা অত্যন্ত গুরুত্বপূর্ণ।
+
+১৪. Encapsulation
+Encapsulation = data এবং তার behavior-কে একসাথে রাখা এবং data-এর access নিয়ন্ত্রণ করা।
+
+উদাহরণ:
+
+class BankAccount {
+  constructor(balance) {
+    this.balance = balance;
+  }
+
+  deposit(amount) {
+    this.balance += amount;
+  }
+
+  withdraw(amount) {
+    if (amount <= this.balance) {
+      this.balance -= amount;
+    }
+  }
+}
+
+ব্যবহার:
+
+const account = new BankAccount(1000);
+
+account.deposit(500);
+account.withdraw(200);
+
+এখানে account-এর data এবং behavior একসাথে রয়েছে।
+
+১৫. Private Property
+Modern JavaScript-এ # দিয়ে truly private field তৈরি করা যায়।
+
+class BankAccount {
+  #balance = 0;
+
+  constructor(initialBalance) {
+    this.#balance = initialBalance;
+  }
+
+  deposit(amount) {
+    this.#balance += amount;
+  }
+
+  getBalance() {
+    return this.#balance;
+  }
+}
+
+ব্যবহার:
+
+const account = new BankAccount(1000);
+
+account.deposit(500);
+
+console.log(account.getBalance());
+
+কিন্তু:
+
+console.log(account.#balance);
+
+❌ Syntax error।
+
+এটাই private field-এর মূল সুবিধা।
+
+১৬. Getter এবং Setter
+Getter দিয়ে property পড়া যায়:
+
+class User {
+  constructor(name) {
+    this._name = name;
+  }
+
+  get name() {
+    return this._name;
+  }
+}
+
+ব্যবহার:
+
+const user = new User("Rahim");
+
+console.log(user.name);
+
+এখানে:
+
+user.name
+
+function call-এর মতো:
+
+user.name()
+
+নয়।
+
+Setter:
+
+class User {
+  constructor(name) {
+    this._name = name;
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  set name(value) {
+    if (value.length < 3) {
+      throw new Error("Name too short");
+    }
+
+    this._name = value;
+  }
+}
+
+এখন:
+
+const user = new User("Rahim");
+
+user.name = "Karim";
+
+Setter execute হবে।
+
+১৭. Abstraction
+Abstraction = complex implementation hide করে শুধু necessary interface expose করা।
+
+উদাহরণ:
+
+class CoffeeMachine {
+  makeCoffee() {
+    this.#boilWater();
+    this.#grindCoffee();
+    this.#brew();
+  }
+
+  #boilWater() {
+    console.log("Boiling water");
+  }
+
+  #grindCoffee() {
+    console.log("Grinding coffee");
+  }
+
+  #brew() {
+    console.log("Brewing");
+  }
+}
+
+User শুধু লিখবে:
+
+const machine = new CoffeeMachine();
+
+machine.makeCoffee();
+
+User-কে জানতে হচ্ছে না:
+
+কীভাবে পানি গরম হলো
+কীভাবে coffee grind হলো
+কীভাবে brew হলো
+
+এটাই abstraction-এর idea।
+
+১৮. Inheritance
+একটি class অন্য class-এর properties এবং methods ব্যবহার করতে পারলে তাকে inheritance বলে।
+
+class Animal {
+  eat() {
+    console.log("Eating");
+  }
+}
+
+class Dog extends Animal {
+  bark() {
+    console.log("Barking");
+  }
+}
+
+এখন:
+
+const dog = new Dog();
+
+dog.eat();
+dog.bark();
+
+Dog পেয়েছে:
+
+Dog
+├── bark()
+└── eat() ← Animal থেকে inherited
+
+১৯. super
+Parent class-এর constructor বা method access করতে super ব্যবহার হয়।
+
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+
+  eat() {
+    console.log(`${this.name} is eating`);
+  }
+}
+
+class Dog extends Animal {
+  constructor(name, breed) {
+    super(name);
+    this.breed = breed;
+  }
+
+  bark() {
+    console.log("Woof!");
+  }
+}
+
+এখানে:
+
+super(name);
+
+parent constructor call করছে।
+
+২০. Parent Method Override
+Child class parent-এর method নিজের মতো করে define করতে পারে।
+
+class Animal {
+  speak() {
+    console.log("Animal sound");
+  }
+}
+
+class Dog extends Animal {
+  speak() {
+    console.log("Woof!");
+  }
+}
+
+এখন:
+
+const dog = new Dog();
+
+dog.speak();
+
+Output:
+
+Woof!
+
+এটিই method overriding।
+
+২১. Polymorphism
+Poly = many
+Morph = forms
+
+অর্থাৎ একই interface/method বিভিন্ন object-এ বিভিন্ন behavior দিতে পারে।
+
+class Animal {
+  speak() {
+    console.log("Some sound");
+  }
+}
+
+class Dog extends Animal {
+  speak() {
+    console.log("Woof");
+  }
+}
+
+class Cat extends Animal {
+  speak() {
+    console.log("Meow");
+  }
+}
+
+এখন:
+
+const animals = [
+  new Dog(),
+  new Cat()
+];
+
+animals.forEach(animal => {
+  animal.speak();
+});
+
+Output:
+
+Woof
+Meow
+
+একই:
+
+animal.speak()
+
+কিন্তু behavior আলাদা।
+
+এটাই polymorphism-এর practical example।
+
+২২. Static Method
+Static method object-এর জন্য নয়, class-এর জন্য।
+
+class MathHelper {
+  static add(a, b) {
+    return a + b;
+  }
+}
+
+ব্যবহার:
+
+MathHelper.add(10, 20);
+
+কিন্তু:
+
+const helper = new MathHelper();
+
+helper.add(10, 20);
+
+❌ কাজ করবে না।
+
+কারণ add() instance method নয়।
+
+২৩. Static Property
+class User {
+  static count = 0;
+
+  constructor(name) {
+    this.name = name;
+    User.count++;
+  }
+}
+
+এখন:
+
+new User("Rahim");
+new User("Karim");
+new User("Hasan");
+
+console.log(User.count);
+
+Output:
+
+3
+
+২৪. Instance বনাম Static
+সহজভাবে:
+
+Class
+ │
+ ├── static method/property
+ │      ↓
+ │   Class-এর সাথে সম্পর্কিত
+ │
+ └── instance method/property
+        ↓
+     Object-এর সাথে সম্পর্কিত
+
+উদাহরণ:
+
+class User {
+  static role = "user";
+
+  constructor(name) {
+    this.name = name;
+  }
+
+  greet() {
+    console.log(this.name);
+  }
+}
+
+এখানে:
+
+User.role
+
+static।
+
+আর:
+
+const user = new User("Rahim");
+
+user.greet();
+
+instance method।
+
+২৫. Constructor Function — Class-এর আগের style
+JavaScript-এ class আসার আগে constructor function ব্যাপকভাবে ব্যবহৃত হতো।
+
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+}
+
+Person.prototype.greet = function () {
+  console.log(`Hello ${this.name}`);
+};
+
+তারপর:
+
+const person = new Person("Rahim", 25);
+
+person.greet();
+
+এখানে:
+
+person
+ ↓
+Person.prototype
+ ↓
+Object.prototype
+ ↓
+null
+
+২৬. Class আসলে কি prototype-এর বদলি?
+পুরোপুরি নয়।
+
+JavaScript এখনও prototype-based।
+
+class মূলত prototype-based system-এর উপর cleaner syntax প্রদান করে।
+
+উদাহরণ:
+
+class Person {
+  greet() {
+    console.log("Hello");
+  }
+}
+
+এর method:
+
+Person.prototype.greet
+
+এর মধ্যে পাওয়া যায়।
+
+তাই JavaScript OOP বুঝতে হলে শুধু class জানলেই হবে না।
+
+Prototype অবশ্যই বুঝতে হবে।
+
+২৭. Composition
+OOP-এ শুধু inheritance নয়, composition-ও খুব গুরুত্বপূর্ণ।
+
+Inheritance:
+
+Dog IS-A Animal
+
+Composition:
+
+Car HAS-A Engine
+
+উদাহরণ:
+
+class Engine {
+  start() {
+    console.log("Engine started");
+  }
+}
+
+class Car {
+  constructor() {
+    this.engine = new Engine();
+  }
+
+  start() {
+    this.engine.start();
+    console.log("Car started");
+  }
+}
+
+এখন:
+
+const car = new Car();
+
+car.start();
+
+এখানে Car একটি Engine inherit করেনি।
+
+বরং:
+
+Car
+ └── Engine
+
+অর্থাৎ Car has an Engine।
+
+অনেক real-world application-এ composition inheritance-এর চেয়ে বেশি flexible।
+
+২৮. Inheritance বনাম Composition
+ধরুন:
+
+class Animal {}
+class Dog extends Animal {}
+
+এটি:
+
+Dog IS-A Animal
+
+কিন্তু যদি:
+
+class Engine {}
+class Car {
+  constructor() {
+    this.engine = new Engine();
+  }
+}
+
+এটি:
+
+Car HAS-A Engine
+
+Modern application design-এ অনেক সময়:
+
+Prefer composition over inheritance
+
+এই principle গুরুত্বপূর্ণ।
+
+২৯. JavaScript-এ Interface আছে?
+JavaScript-এ Java/C#-এর মতো traditional interface keyword নেই।
+
+তবে একই ধারণা বিভিন্নভাবে implement করা যায়।
+
+যেমন:
+
+class Payment {
+  pay(amount) {
+    throw new Error("pay() must be implemented");
+  }
+}
+
+তারপর:
+
+class BkashPayment extends Payment {
+  pay(amount) {
+    console.log(`Paid ${amount}`);
+  }
+}
+
+class CardPayment extends Payment {
+  pay(amount) {
+    console.log(`Card payment: ${amount}`);
+  }
+}
+
+এখানে common contract-এর ধারণা তৈরি করা হয়েছে।
+
+TypeScript-এ অবশ্য সত্যিকারের interface রয়েছে।
+
+৩০. Duck Typing
+JavaScript dynamically typed হওয়ায় একটি গুরুত্বপূর্ণ ধারণা হলো:
+
+"If it looks like a duck and behaves like a duck, treat it like a duck."
+
+উদাহরণ:
+
+function makeSound(animal) {
+  animal.speak();
+}
+
+যে object-এর speak() আছে সেটি ব্যবহার করা যাবে:
+
+const dog = {
+  speak() {
+    console.log("Woof");
+  }
+};
+
+const cat = {
+  speak() {
+    console.log("Meow");
+  }
+};
+
+makeSound(dog);
+makeSound(cat);
+
+এখানে কোনো নির্দিষ্ট class inherit করতেই হবে এমন নয়।
+
+৩১. Object Composition-এর Practical Example
+ধরুন একটি e-commerce system।
+
+class Product {
+  constructor(name, price) {
+    this.name = name;
+    this.price = price;
+  }
+}
+
+Cart:
+
+class Cart {
+  constructor() {
+    this.items = [];
+  }
+
+  addProduct(product) {
+    this.items.push(product);
+  }
+
+  getTotal() {
+    return this.items.reduce(
+      (total, product) => total + product.price,
+      0
+    );
+  }
+}
+
+ব্যবহার:
+
+const laptop = new Product("Laptop", 80000);
+const mouse = new Product("Mouse", 1500);
+
+const cart = new Cart();
+
+cart.addProduct(laptop);
+cart.addProduct(mouse);
+
+console.log(cart.getTotal());
+
+Output:
+
+81500
+
+এখানে:
+
+Product
+   ↑
+Cart contains Products
+
+এটি composition-এর একটি ভালো উদাহরণ।
+
+৩২. একটি Complete OOP Example
+এবার সব concept একসাথে দেখি।
+
+class BankAccount {
+  #balance;
+
+  constructor(owner, initialBalance = 0) {
+    this.owner = owner;
+    this.#balance = initialBalance;
+  }
+
+  deposit(amount) {
+    if (amount <= 0) {
+      throw new Error("Invalid amount");
+    }
+
+    this.#balance += amount;
+  }
+
+  withdraw(amount) {
+    if (amount <= 0) {
+      throw new Error("Invalid amount");
+    }
+
+    if (amount > this.#balance) {
+      throw new Error("Insufficient balance");
+    }
+
+    this.#balance -= amount;
+  }
+
+  get balance() {
+    return this.#balance;
+  }
+}
+
+ব্যবহার:
+
+const account = new BankAccount("Rahim", 1000);
+
+account.deposit(500);
+account.withdraw(200);
+
+console.log(account.balance);
+
+Output:
+
+1300
+
+এখানে আমরা পেয়েছি:
+
+Class
+Constructor
+Instance
+Private field
+Encapsulation
+Getter
+Methods
+Validation
+৩৩. আরেকটি বাস্তব OOP Example
+ধরুন একটি notification system।
+
+class Notification {
+  send(message) {
+    throw new Error("send() must be implemented");
+  }
+}
+
+class EmailNotification extends Notification {
+  send(message) {
+    console.log(`Email: ${message}`);
+  }
+}
+
+class SMSNotification extends Notification {
+  send(message) {
+    console.log(`SMS: ${message}`);
+  }
+}
+
+class PushNotification extends Notification {
+  send(message) {
+    console.log(`Push: ${message}`);
+  }
+}
+
+এখন:
+
+const notifications = [
+  new EmailNotification(),
+  new SMSNotification(),
+  new PushNotification()
+];
+
+notifications.forEach(notification => {
+  notification.send("Hello!");
+});
+
+Output:
+
+Email: Hello!
+SMS: Hello!
+Push: Hello!
+
+এখানে polymorphism খুব পরিষ্কার।
+
+৩৪. OOP-এর গুরুত্বপূর্ণ শব্দগুলো একসাথে
+Term	অর্থ
+Object	Data + behavior-এর entity
+Property	Object-এর data
+Method	Object-এর function
+Class	Object তৈরির structure
+Instance	Class থেকে তৈরি object
+Constructor	Object initialization
+this	Current context/object reference
+Prototype	Object inheritance mechanism
+Inheritance	Parent থেকে behavior নেওয়া
+Encapsulation	Data/behavior একত্র ও access control
+Abstraction	Complexity hide করা
+Polymorphism	Same interface, different behavior
+Override	Parent method redefine করা
+Static	Class-level member
+Composition	Object-এর মধ্যে অন্য object ব্যবহার
+
+৩৫. JavaScript OOP-এর Mental Model
+এটি মাথায় রাখুন:
+
+                 JavaScript OOP
+                       │
+            ┌──────────┴──────────┐
+            │                     │
+         Object                Prototype
+            │                     │
+         Instance             Prototype Chain
+            │
+          Class
+            │
+      ┌─────┼─────┐
+      │     │     │
+ Encapsulation  Inheritance
+      │           │
+ Abstraction   Polymorphism
+
+কিন্তু আরও fundamental level-এ:
+
+Object
+  ↓
+Prototype
+  ↓
+Prototype
+  ↓
+Object.prototype
+  ↓
+null
+
+৩৬. Beginner থেকে Advanced শেখার Roadmap
+আমি হলে JavaScript OOP এই order-এ শিখতাম:
+
+Level 1 — Foundation
+প্রথমে:
+
+Object
+Property
+Method
+Function
+this
+
+Level 2 — Object Creation
+তারপর:
+
+Constructor Function
+new
+Class
+Constructor
+Instance
+
+Level 3 — Prototype
+এরপর অবশ্যই:
+
+prototype
+__proto__
+Object.getPrototypeOf()
+Prototype Chain
+
+Level 4 — OOP Principles
+তারপর:
+
+Encapsulation
+Abstraction
+Inheritance
+Polymorphism
+
+Level 5 — Advanced Class
+তারপর:
+
+Private fields (#)
+Getter
+Setter
+Static methods
+Static fields
+extends
+super
+Method overriding
+
+Level 6 — Design
+সবশেষে:
+
+Composition
+Dependency Injection
+SOLID
+Design Patterns
+Clean Architecture
+
+৩৭. সবচেয়ে গুরুত্বপূর্ণ বিষয়
+JavaScript OOP শেখার সময় এই ভুলটি করবেন না:
+
+class Person {
+  ...
+}
+
+শুধু এটুকু শিখে মনে করবেন না যে আপনি JavaScript OOP বুঝে ফেলেছেন।
+
+JavaScript-এর OOP বুঝতে হলে এই relationship-টা পরিষ্কার হতে হবে:
+
+class
+  ↓
+constructor
+  ↓
+instance
+  ↓
+prototype
+  ↓
+prototype chain
+  ↓
+inheritance
+
+আর application design-এর জন্য:
+
+Encapsulation
+      +
+Abstraction
+      +
+Polymorphism
+      +
+Composition
+
+এইগুলো বুঝতে হবে।
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
